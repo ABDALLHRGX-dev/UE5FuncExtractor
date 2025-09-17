@@ -13,3 +13,7 @@ IHttpRequest::SetURL() → _ZN12IHttpRequest6SetURLEv
 IHttpRequest::SetVerb() → _ZN12IHttpRequest7SetVerbEv
 IHttpRequest::SetHeader() → _ZN12IHttpRequest9SetHeaderEv
 IHttpRequest::ProcessRequest() → _ZN12IHttpRequest14ProcessRequestEv
+IHttpRequest::SetURL() → _ZN12IHttpRequest6SetURLEv
+IHttpRequest::SetVerb() → _ZN12IHttpRequest7SetVerbEv
+IHttpRequest::SetHeader() → _ZN12IHttpRequest9SetHeaderEv
+IHttpRequest::ProcessRequest() → _ZN12IHttpRequest14ProcessRequestEv
