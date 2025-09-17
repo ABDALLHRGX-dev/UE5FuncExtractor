@@ -1,0 +1,11 @@
+ISocketSubsystem::CreateSocket
+ISocketSubsystem::DestroySocket
+FHttpModule::CreateRequest
+FHttpRequest::GetResponse
+FHttpResponse::GetResponseCode
+FHttpResponse::GetContentAsString
+FHttpManager::AddRequest
+FHttpManager::FlushRequests
+FInternetAddr::SetIp
+FInternetAddr::SetPort
+curl_easy_setopt
