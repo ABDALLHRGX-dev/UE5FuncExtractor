@@ -1,11 +1,43 @@
-ISocketSubsystem::CreateSocket
-ISocketSubsystem::DestroySocket
-FHttpModule::CreateRequest
-FHttpRequest::GetResponse
-FHttpResponse::GetResponseCode
-FHttpResponse::GetContentAsString
-FHttpManager::AddRequest
-FHttpManager::FlushRequests
-FInternetAddr::SetIp
-FInternetAddr::SetPort
-IHttpRequest "*Nucleus Communication Like curl_easy_setopt*"
+# Unreal Engine 5.0.x Function & Interface Reference
+# This file lists key networking and HTTP-related functions/interfaces
+# for analysis in libUnreal.so or other UE5 binaries.
+# Notes:
+# 1. Some functions are implemented via interfaces (IHttpRequest/IHttpResponse).
+# 2. Some names may be mangled in the binary; use nm/c++filt or r2pipe to find offsets.
+# 3. Inline functions may not have separate symbols; pattern scan may be needed.
+# 4. Offsets can be added later after analyzing the binary.
+
+# =========================
+# Socket Subsystem Functions
+# =========================
+ISocketSubsystem::CreateSocket        # Creates a network socket | Offset: TBD
+ISocketSubsystem::DestroySocket       # Destroys a previously created socket | Offset: TBD
+
+# =========================
+# HTTP Module & Request Functions
+# =========================
+FHttpModule::CreateRequest             # Creates a new HTTP request | Offset: TBD
+FHttpRequest::GetResponse              # Retrieves HTTP response via IHttpRequest interface | Offset: TBD
+FHttpResponse::GetResponseCode         # Returns response code via IHttpResponse interface | Offset: TBD
+FHttpResponse::GetContentAsString      # Returns response content as string via IHttpResponse interface | Offset: TBD
+FHttpManager::AddRequest               # Adds an HTTP request to the manager | Offset: TBD
+FHttpManager::FlushRequests            # Replaced by FHttpManager::Flush in UE5 | Offset: TBD
+
+# =========================
+# Internet Address Functions
+# =========================
+FInternetAddr::SetIp                    # Sets IP address (uint32) | Offset: TBD
+FInternetAddr::SetPort                  # Sets port (int32) | Offset: TBD
+
+# =========================
+# Interfaces
+# =========================
+IHttpRequest                            # Interface for HTTP requests | Offset: TBD
+"*Nucleus Communication Like curl_easy_setopt*"  # Internal UE HTTP/Nucleus settings | Offset: TBD
+
+# =========================
+# Notes:
+# - Replace TBD with actual offsets after binary analysis.
+# - Mangled names in libUnreal.so may look like:
+#   _ZN17ISocketSubsystem12CreateSocketEPKcNS_6ESocketTypeE
+# - For inline functions or interface methods, use pattern scanning or runtime hooking.
