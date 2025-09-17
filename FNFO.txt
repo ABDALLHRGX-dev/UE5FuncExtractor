@@ -8,4 +8,4 @@ FHttpManager::AddRequest
 FHttpManager::FlushRequests
 FInternetAddr::SetIp
 FInternetAddr::SetPort
-curl_easy_setopt
+IHttpRequest "*Nucleus Communication Like curl_easy_setopt*"
