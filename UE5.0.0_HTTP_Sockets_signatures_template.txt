@@ -1,18 +1,4 @@
-================================================================================
-UE4 / Networking - Extracted Function Signatures & Offsets Template
-Generated for repository usage — fill placeholders with offsets/indexes from binaries
-================================================================================
-
-GENERAL INSTRUCTIONS
-- For virtual functions: locate the class vtable, compute the function pointer as:
-    pointer = vtable_base + (vtable_index * pointer_size)
-  (pointer_size = 8 for x86_64/ARM64, 4 for x86/ARM32).
-- For non-virtual functions: search by unique strings, function names in symbols, or byte-patterns.
-- Use XREFs (cross-references) to confirm callers and usage contexts.
-- Recommended tools: IDA Pro + Hex-Rays, Ghidra, radare2 (r2), rizin, and FLIRT signatures (IDA).
-- Replace `0x________` and `INDEX` placeholders with actual values.
-
-================================================================================
+=============================================
 1) ISocketSubsystem::CreateSocket
 --------------------------------------------------------------------------------
 Signature(s):
