@@ -1,0 +1,286 @@
+================================================================================
+UE4 / Networking - Extracted Function Signatures & Offsets Template
+Generated for repository usage — fill placeholders with offsets/indexes from binaries
+================================================================================
+
+GENERAL INSTRUCTIONS
+- For virtual functions: locate the class vtable, compute the function pointer as:
+    pointer = vtable_base + (vtable_index * pointer_size)
+  (pointer_size = 8 for x86_64/ARM64, 4 for x86/ARM32).
+- For non-virtual functions: search by unique strings, function names in symbols, or byte-patterns.
+- Use XREFs (cross-references) to confirm callers and usage contexts.
+- Recommended tools: IDA Pro + Hex-Rays, Ghidra, radare2 (r2), rizin, and FLIRT signatures (IDA).
+- Replace `0x________` and `INDEX` placeholders with actual values.
+
+================================================================================
+1) ISocketSubsystem::CreateSocket
+--------------------------------------------------------------------------------
+Signature(s):
+- virtual FSocket* CreateSocket(const FName& SocketType, const FString& SocketDescription, bool bForceUDP = false);
+- virtual FSocket* CreateSocket(const FName& SocketType, const FString& SocketDescription, const FName& ProtocolName) = 0;
+- (deprecated) virtual FSocket* CreateSocket(const FName& SocketType, const FString& SocketDescription, ESocketProtocolFamily ProtocolType);
+
+Source file (reference):
+Engine/Source/Runtime/Sockets/Public/SocketSubsystem.h
+
+Notes:
+- This is a virtual (often pure virtual) method on ISocketSubsystem or its concrete implementor (e.g., FSocketSubsystemBSD).
+- Look for the vtable for the interface/implementor.
+- Overloads exist across UE versions; check both names and parameter lists.
+- Often used by socket factories and wrappers.
+
+Placeholders:
+- vtable name (if known): __vt__ISocketSubsystem or __vt__FSocketSubsystemBSD
+- vtable_index: INDEX
+- resolved_offset (function pointer in binary): 0x________
+- unique / search hints (strings): "SocketSubsystem", "CreateSocket", "SocketDescription", protocol name strings
+- suggested byte-pattern (if available): 0x________
+
+XREF / validation strategy:
+- Inspect callers: ISocketSubsystem uses, factories, and socket creation sites.
+- Use `axt`/`xrefs` to find references to wrapper code that constructs FSocket objects.
+
+================================================================================
+2) ISocketSubsystem::DestroySocket
+--------------------------------------------------------------------------------
+Signature:
+- virtual void DestroySocket(FSocket* Socket) = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Sockets/Public/SocketSubsystem.h
+
+Notes:
+- Virtual & pure — present in vtable for the subsystem interface.
+- Often implemented by concrete subsystems (e.g., FSocketSubsystemBSD::DestroySocket).
+- Commonly used by RAII wrappers (e.g., FUniqueSocket).
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset (function pointer): 0x________
+- search hints: "DestroySocket", "delete Socket", "CloseSocket"
+
+XREF / validation:
+- Look for Calls that call DestroySocket on FSocket pointers.
+- Inspect destructors or socket cleanup code.
+
+================================================================================
+3) FHttpModule::CreateRequest
+--------------------------------------------------------------------------------
+Signature:
+- virtual TSharedRef<IHttpRequest, ESPMode::ThreadSafe> CreateRequest();
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Public/HttpModule.h
+
+Notes:
+- Returns a thread-safe TSharedRef to IHttpRequest (interface).
+- Implementation usually constructs a concrete request via FPlatformHttp::ConstructRequest or platform-specific code.
+- May have a null implementation depending on build settings (bUseNullHttp).
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "HttpModule", "CreateRequest", "ConstructRequest", "bUseNullHttp"
+
+XREF / validation:
+- Find code paths handling HTTP requests, e.g., code which does CreateRequest()->SetURL(...) and then ProcessRequest().
+
+================================================================================
+4) IHttpRequest::GetResponse (FHttpRequest::GetResponse)
+--------------------------------------------------------------------------------
+Signature:
+- virtual const FHttpResponsePtr GetResponse() const = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Public/Interfaces/IHttpRequest.h
+
+Notes:
+- Pure virtual in the interface. FHttpResponsePtr is typically TSharedPtr<IHttpResponse>.
+- Called by request handlers to fetch the response object.
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "GetResponse", "IHttpRequest", "ResponsePtr"
+
+XREF / validation:
+- Inspect code where requests are polled or completed and Response is read.
+
+================================================================================
+5) IHttpResponse::GetResponseCode (FHttpResponse::GetResponseCode)
+--------------------------------------------------------------------------------
+Signature:
+- virtual int32 GetResponseCode() const = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Public/Interfaces/IHttpResponse.h
+
+Notes:
+- Pure virtual. Returns HTTP status code (e.g., 200).
+- Frequently used in completion handlers.
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "GetResponseCode", "EHttpResponseCodes", "200", "404"
+
+XREF / validation:
+- Search for checks like `if (Response->GetResponseCode() == 200)` or switch logic on codes.
+
+================================================================================
+6) IHttpResponse::GetContentAsString (FHttpResponse::GetContentAsString)
+--------------------------------------------------------------------------------
+Signature:
+- virtual FString GetContentAsString() const = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Public/Interfaces/IHttpResponse.h
+
+Notes:
+- Pure virtual. Returns response body as FString (UTF-8 or platform encoding).
+- Useful for parsing JSON/text payloads in handlers.
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "GetContentAsString", "GetAllHeaders", "Response->"
+
+XREF / validation:
+- Find string parsing logic that calls GetContentAsString() or uses returned FString.
+
+================================================================================
+7) FHttpManager::AddRequest
+--------------------------------------------------------------------------------
+Signature:
+- void FHttpManager::AddRequest(const FHttpRequestRef& Request);
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Private/HttpManager.cpp
+
+Notes:
+- Non-virtual member function; common in manager singletons.
+- Uses locks (FScopeLock) and adds to internal container `Requests`.
+- Pay attention to how the singleton instance is stored (static pointer/global).
+
+Placeholders:
+- method_offset (if direct symbol): 0x________
+- containing_class_offset (field offsets for Requests list): 0x________
+- search hints: "HttpManager", "AddRequest", "Requests.Add", "FScopeLock"
+
+XREF / validation:
+- Inspect code that enqueues requests for async processing or pushes to thread.
+
+================================================================================
+8) FHttpManager::FlushRequests
+--------------------------------------------------------------------------------
+Signature:
+- void FHttpManager::Flush(EHttpFlushReason FlushReason);
+  (or) void Flush(bool bShutdown = false); // possible overloads
+
+Source file (reference):
+Engine/Source/Runtime/Online/HTTP/Private/HttpManager.cpp
+
+Notes:
+- Non-virtual. Executes flushing loop and may call Tick() to process remaining requests.
+- Might reference FlushTimeLimitsMap and call ReloadFlushTimeLimits.
+
+Placeholders:
+- method_offset: 0x________
+- search hints: "FlushRequests", "FlushTimeLimitsMap", "FlushReason"
+
+XREF / validation:
+- Look for places where code requests immediate sending or shutdown flow.
+
+================================================================================
+9) FInternetAddr::SetIp
+--------------------------------------------------------------------------------
+Signature(s):
+- virtual void SetIp(uint32 InAddr) = 0;
+- virtual void SetIp(const TCHAR* InAddr, bool& bIsValid) = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Sockets/Public/IPAddress.h
+
+Notes:
+- Pure virtual — part of FInternetAddr interface.
+- Concrete implementations (FInternetAddrBSD, etc.) use sockaddr and inet_pton.
+- Also check SetRawIp(const TArray<uint8>& RawAddr) other overloads.
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "SetIp", "inet_pton", "sockaddr_storage", "FInternetAddr"
+
+XREF / validation:
+- Search for code that parses IP strings or assigns raw IP arrays.
+
+================================================================================
+10) FInternetAddr::SetPort
+--------------------------------------------------------------------------------
+Signature:
+- virtual void SetPort(int32 InPort) = 0;
+
+Source file (reference):
+Engine/Source/Runtime/Sockets/Public/IPAddress.h
+
+Notes:
+- Pure virtual. Implementations call htons() to store network-order port.
+- May have SetPlatformPort fallback wrapper.
+
+Placeholders:
+- vtable_index: INDEX
+- resolved_offset: 0x________
+- search hints: "SetPort", "htons", "sin_port", "SetPlatformPort"
+
+XREF / validation:
+- Inspect socket bind/connect code paths or code that composes sockaddr_in/_in6.
+
+================================================================================
+ADDITIONAL FIELDS FOR REPOSITORY USE
+--------------------------------------------------------------------------------
+- UE_Version / Binary Identifier: __________________________
+  (put the engine version or binary checksum so offsets are traceable)
+- Binary file name: ________________________________________
+- Extraction date (UTC): _________________________________
+- Extractor name / tool and version: ________________________
+- Notes on endianness / architecture: ______________________
+
+COMMON r2 EXAMPLES (quick reference)
+--------------------------------------------------------------------------------
+# 1) Full analysis
+aaa
+
+# 2) List functions and search by name
+afl | grep Http
+
+# 3) Inspect vtable memory region (example address)
+s sym.__vt__FHttpModule
+pxq 32 @ sym.__vt__FHttpModule
+
+# 4) Get pointer at vtable index (ARM64/x86_64: 8 bytes per pointer)
+# Example: index = 3
+?v @ sym.__vt__FHttpModule + 3 * 8
+
+# 5) Print function disassembly & XREFs
+s 0x<func_addr>
+pdf
+axt
+
+# 6) Search for hex pattern
+/x <hex-bytes>
+
+# 7) Print strings for hints
+iz
+
+CHANGELOG / HISTORY (for repo)
+--------------------------------------------------------------------------------
+- Version: 1.0
+- Contents: Template for 10 functions: ISocketSubsystem::CreateSocket, ISocketSubsystem::DestroySocket,
+  FHttpModule::CreateRequest, IHttpRequest::GetResponse, IHttpResponse::GetResponseCode,
+  IHttpResponse::GetContentAsString, FHttpManager::AddRequest, FHttpManager::FlushRequests,
+  FInternetAddr::SetIp, FInternetAddr::SetPort.
+- How to update: Add new function blocks following the same structure. Always include UE version & binary checksum.
+
+================================================================================
+END OF TEMPLATE
+================================================================================
